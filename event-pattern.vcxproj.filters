@@ -3,4 +3,35 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="eventpatternexamples.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Misc">
+      <UniqueIdentifier>{7335a912-7fc5-4092-b409-5d627030dacb}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include=".editorconfig">
+      <Filter>Misc</Filter>
+    </None>
+    <None Include=".gitattributes">
+      <Filter>Misc</Filter>
+    </None>
+    <None Include=".gitignore">
+      <Filter>Misc</Filter>
+    </None>
+    <None Include=".runsettings">
+      <Filter>Misc</Filter>
+    </None>
+    <None Include="README.md">
+      <Filter>Misc</Filter>
+    </None>
+    <None Include="vcpkg.json">
+      <Filter>Misc</Filter>
+    </None>
+    <None Include="vcpkg-configuration.json">
+      <Filter>Misc</Filter>
+    </None>
+  </ItemGroup>
 </Project>

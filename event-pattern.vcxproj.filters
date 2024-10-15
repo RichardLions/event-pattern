@@ -5,6 +5,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="eventpatternexamples.h" />
+    <ClInclude Include="event.h" />
+    <ClInclude Include="eventhandler.h" />
+    <ClInclude Include="eventqueue.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Misc">

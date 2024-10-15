@@ -137,7 +137,10 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="event.h" />
+    <ClInclude Include="eventhandler.h" />
     <ClInclude Include="eventpatternexamples.h" />
+    <ClInclude Include="eventqueue.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />

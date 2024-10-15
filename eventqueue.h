@@ -3,56 +3,56 @@
 #include <functional>
 #include <unordered_set>
 
-#include "eventhandler.h"
+#include "eventconsumer.h"
 
 class EventQueue
 {
 public:
-    enum class Token : uint32_t { Invalid = 0 };
+    enum class ConsumerToken : uint32_t { Invalid = 0 };
     using EventTypeIds = std::unordered_set<EventTypeId>;
-    using Handlers = std::vector<std::unique_ptr<EventHandlerConcept>>;
+    using Consumers = std::vector<std::unique_ptr<EventConsumerConcept>>;
     using Events = std::vector<std::shared_ptr<EventConcept>>;
-    using HandlerGroup = std::tuple<EventTypeIds, Handlers, Events>;
-    using HandlerGroups = std::unordered_map<Token, HandlerGroup>;
+    using ConsumerGroup = std::tuple<EventTypeIds, Consumers, Events>;
+    using ConsumerGroups = std::unordered_map<ConsumerToken, ConsumerGroup>;
 
-    [[nodiscard]] static Token GetToken()
+    [[nodiscard]] static ConsumerToken GetConsumerToken()
     {
         return Increament(ms_TokenSequence);
     }
 
     template<typename TEvent> requires IsEventModel<TEvent>
-    void RegisterHandler(const Token token, EventHandlerModel<TEvent>::EventHandler&& handler)
+    void RegisterConsumer(const ConsumerToken token, EventConsumerModel<TEvent>::EventConsumer&& consumer)
     {
-        assert(token > Token::Invalid);
-        HandlerGroup& group{m_Groups[token]};
+        assert(token > ConsumerToken::Invalid);
+        ConsumerGroup& group{m_Groups[token]};
 
         EventTypeIds& ids{std::get<EventTypeIds>(group)};
         assert(ids.contains(TEvent::GetStaticId()) == false);
         ids.insert(TEvent::GetStaticId());
 
-        Handlers& handlers{std::get<Handlers>(group)};
-        handlers.push_back(std::make_unique<EventHandlerModel<TEvent>>(std::move(handler)));
+        Consumers& consumers{std::get<Consumers>(group)};
+        consumers.push_back(std::make_unique<EventConsumerModel<TEvent>>(std::move(consumer)));
     }
 
     template<typename TEvent> requires IsEventModel<TEvent>
-    void UnregisterHandler(const Token token)
+    void UnregisterConsumer(const ConsumerToken token)
     {
         auto itr{m_Groups.find(token)};
         assert(itr != std::end(m_Groups));
-        HandlerGroup& group{itr->second};
+        ConsumerGroup& group{itr->second};
 
         EventTypeIds& ids{std::get<EventTypeIds>(group)};
         [[maybe_unused]] const size_t removedIds{ids.erase(TEvent::GetStaticId())};
         assert(removedIds == 1);
 
-        Handlers& handlers{std::get<Handlers>(group)};
-        [[maybe_unused]] const size_t removedHandlers{std::erase_if(
-            handlers,
-            [](const std::unique_ptr<EventHandlerConcept>& handler)
+        Consumers& consumers{std::get<Consumers>(group)};
+        [[maybe_unused]] const size_t removedConsumers{std::erase_if(
+            consumers,
+            [](const std::unique_ptr<EventConsumerConcept>& consumer)
             {
-                return handler->GetId() == TEvent::GetStaticId();
+                return consumer->GetId() == TEvent::GetStaticId();
             })};
-        assert(removedHandlers == 1);
+        assert(removedConsumers == 1);
     }
 
     template<typename TEvent> requires IsEventModel<TEvent>
@@ -70,28 +70,28 @@ public:
         }
     }
 
-    /// Does not support queueing events or adding/removing listeners during dispatch.
-    void DispatchEvents(const Token token)
+    /// Does not support queueing events or adding/removing consumers during event consumption.
+    void ConsumeEvents(const ConsumerToken token)
     {
         auto itr{m_Groups.find(token)};
         assert(itr != std::end(m_Groups));
+        ConsumerGroup& group{itr->second};
 
-        const Handlers& handlers{std::get<Handlers>(itr->second)};
-        Events& events{std::get<Events>(itr->second)};
+        const Consumers& consumers{std::get<Consumers>(group)};
+        Events& events{std::get<Events>(group)};
         for(const std::shared_ptr<EventConcept>& event : events)
         {
-            for(const std::unique_ptr<EventHandlerConcept>& handler : handlers)
+            for(const std::unique_ptr<EventConsumerConcept>& consumer : consumers)
             {
-                if(handler->HandleEvent(event.get()))
+                if(consumer->ConsumeEvent(event.get()))
                     break;
             }
         }
         events.clear();
     }
-
 private:
-    HandlerGroups m_Groups{};
-    static Token ms_TokenSequence;
+    ConsumerGroups m_Groups{};
+    static ConsumerToken ms_TokenSequence;
 };
 
-EventQueue::Token EventQueue::ms_TokenSequence{Token::Invalid};
+EventQueue::ConsumerToken EventQueue::ms_TokenSequence{ConsumerToken::Invalid};

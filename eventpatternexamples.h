@@ -55,21 +55,21 @@ TEST_CASE("Event Pattern - Static Event Ids")
     REQUIRE(eventAPtr->GetId() != eventBPtr->GetId());
 }
 
-TEST_CASE("Event Pattern - Register/Unregister Event Handler")
+TEST_CASE("Event Pattern - Register/Unregister Event Consumer")
 {
     EventQueue eventQueue{};
-    const EventQueue::Token token{EventQueue::GetToken()};
-    REQUIRE(token > EventQueue::Token::Invalid);
+    const EventQueue::ConsumerToken token{EventQueue::GetConsumerToken()};
+    REQUIRE(token > EventQueue::ConsumerToken::Invalid);
 
     uint32_t value{0};
-    eventQueue.RegisterHandler<EventA>(
+    eventQueue.RegisterConsumer<EventA>(
         token,
         [&value](const EventA& event)
         {
             REQUIRE(event.m_Value == 1);
             ++value;
         });
-    eventQueue.RegisterHandler<EventB>(
+    eventQueue.RegisterConsumer<EventB>(
         token,
         [&value](const EventB& event)
         {
@@ -79,39 +79,39 @@ TEST_CASE("Event Pattern - Register/Unregister Event Handler")
     eventQueue.QueueEvent(EventA{1});
     REQUIRE(value == 0);
 
-    eventQueue.DispatchEvents(token);
-    eventQueue.DispatchEvents(token);
+    eventQueue.ConsumeEvents(token);
+    eventQueue.ConsumeEvents(token);
     REQUIRE(value == 1);
 
     eventQueue.QueueEvent(EventA{2});
-    eventQueue.UnregisterHandler<EventA>(token);
-    eventQueue.DispatchEvents(token);
+    eventQueue.UnregisterConsumer<EventA>(token);
+    eventQueue.ConsumeEvents(token);
     REQUIRE(value == 1);
 
     eventQueue.QueueEvent(EventA{2});
     eventQueue.QueueEvent(EventB{true});
-    eventQueue.DispatchEvents(token);
+    eventQueue.ConsumeEvents(token);
     REQUIRE(value == 0);
 
     eventQueue.QueueEvent(EventB{false});
-    eventQueue.UnregisterHandler<EventB>(token);
-    eventQueue.DispatchEvents(token);
+    eventQueue.UnregisterConsumer<EventB>(token);
+    eventQueue.ConsumeEvents(token);
     REQUIRE(value == 0);
 }
 
 TEST_CASE("Event Pattern  - Benchmarks")
 {
-    BENCHMARK("Handle Events")
+    BENCHMARK("Consume Events")
     {
         constexpr uint32_t eventCount{100'000};
 
         EventQueue eventQueue{};
-        const EventQueue::Token token{EventQueue::GetToken()};
+        const EventQueue::ConsumerToken token{EventQueue::GetConsumerToken()};
 
-        eventQueue.RegisterHandler<EventA>(
+        eventQueue.RegisterConsumer<EventA>(
             token,
             [](const EventA&){});
-        eventQueue.RegisterHandler<EventB>(
+        eventQueue.RegisterConsumer<EventB>(
             token,
             [](const EventB&){});
 
@@ -119,34 +119,34 @@ TEST_CASE("Event Pattern  - Benchmarks")
         {
             eventQueue.QueueEvent(EventA{1});
             eventQueue.QueueEvent(EventB{1});
-            eventQueue.DispatchEvents(token);
+            eventQueue.ConsumeEvents(token);
         }
     };
 
-    BENCHMARK("Register/Unregister Event Handler")
+    BENCHMARK("Register/Unregister Event Consumer")
     {
         constexpr uint32_t registerCount{10'000};
 
-        std::vector<EventQueue::Token> tokens{};
+        std::vector<EventQueue::ConsumerToken> tokens{};
         tokens.reserve(registerCount);
 
         EventQueue eventQueue{};
         for(uint32_t i{0}; i != registerCount; ++i)
         {
-            const EventQueue::Token token{EventQueue::GetToken()};
-            eventQueue.RegisterHandler<EventA>(
+            const EventQueue::ConsumerToken token{EventQueue::GetConsumerToken()};
+            eventQueue.RegisterConsumer<EventA>(
                 token,
                 [](const EventA&){});
-            eventQueue.RegisterHandler<EventB>(
+            eventQueue.RegisterConsumer<EventB>(
                 token,
                 [](const EventB&){});
             tokens.push_back(token);
         }
 
-        for(const EventQueue::Token token : tokens)
+        for(const EventQueue::ConsumerToken token : tokens)
         {
-            eventQueue.UnregisterHandler<EventB>(token);
-            eventQueue.UnregisterHandler<EventA>(token);
+            eventQueue.UnregisterConsumer<EventB>(token);
+            eventQueue.UnregisterConsumer<EventA>(token);
         }
     };
 }

@@ -4,7 +4,42 @@ This pattern was inspired by [Game Programming Patterns](https://gameprogramming
 
 ## When To Use
 
-...
+The Event pattern reduces dependencies between event producers and event consumers. This is achieved by produced events being stored so they can be consumed asynchronously. Consuming events asynchronously opens up opportunities on when and how they are consumed based on technical requirements.
+
+## Features
+
+The example Event Queue implemented in this repository has the following features:
+* Each consumer is uniquely identified by a consumer token.
+* Each consumer chooses when to consume events.
+* Each consumer has their own event queue. This means each consumer will receive a copy of any event they have registered for and can consume the event independently of other consumers.
+
+## Example
+
+Example producing and consuming an event.
+
+```cpp
+class Event final : public EventModel<Event>
+{
+public:
+    ...
+};
+
+{
+    EventQueue eventQueue{};
+
+    const EventQueue::ConsumerToken token{EventQueue::GetConsumerToken()};
+    eventQueue.RegisterConsumer<Event>(
+        token,
+        [&value](const Event& event)
+        {
+            ...
+        });
+
+    eventQueue.QueueEvent(Event{...});
+    eventQueue.ConsumeEvents(token);
+    eventQueue.UnregisterConsumer<Event>(token);
+}
+```
 
 ## Setup
 

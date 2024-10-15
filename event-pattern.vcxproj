@@ -138,7 +138,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="event.h" />
-    <ClInclude Include="eventhandler.h" />
+    <ClInclude Include="eventconsumer.h" />
     <ClInclude Include="eventpatternexamples.h" />
     <ClInclude Include="eventqueue.h" />
   </ItemGroup>

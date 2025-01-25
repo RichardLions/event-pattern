@@ -3,9 +3,9 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/benchmark/catch_benchmark.hpp>
 
-#include "eventqueue.h"
+#include "event/eventqueue.h"
 
-class EventA final : public EventModel<EventA>
+class EventA final : public Event::EventModel<EventA>
 {
 public:
     explicit EventA(const uint32_t value)
@@ -16,7 +16,7 @@ public:
     uint32_t m_Value{0};
 };
 
-class EventB final : public EventModel<EventB>
+class EventB final : public Event::EventModel<EventB>
 {
 public:
     explicit EventB(const bool value)
@@ -29,8 +29,8 @@ public:
 
 TEST_CASE("Event Pattern - Static Event Ids")
 {
-    REQUIRE(EventA::GetStaticId() > EventTypeId::Invalid);
-    REQUIRE(EventB::GetStaticId() > EventTypeId::Invalid);
+    REQUIRE(EventA::GetStaticId() > Event::EventTypeId::Invalid);
+    REQUIRE(EventB::GetStaticId() > Event::EventTypeId::Invalid);
 
     REQUIRE(EventA::GetStaticId() == EventA::GetStaticId());
     REQUIRE(EventB::GetStaticId() == EventB::GetStaticId());
@@ -45,10 +45,10 @@ TEST_CASE("Event Pattern - Static Event Ids")
     REQUIRE(eventB.GetId() == eventBB.GetId());
     REQUIRE(eventA.GetId() != eventB.GetId());
 
-    const EventConcept* const eventAPtr{&eventA};
-    const EventConcept* const eventAAPtr{&eventAA};
-    const EventConcept* const eventBPtr{&eventB};
-    const EventConcept* const eventBBPtr{&eventBB};
+    const Event::EventConcept* const eventAPtr{&eventA};
+    const Event::EventConcept* const eventAAPtr{&eventAA};
+    const Event::EventConcept* const eventBPtr{&eventB};
+    const Event::EventConcept* const eventBBPtr{&eventBB};
 
     REQUIRE(eventAPtr->GetId() == eventAAPtr->GetId());
     REQUIRE(eventBPtr->GetId() == eventBBPtr->GetId());
@@ -57,9 +57,10 @@ TEST_CASE("Event Pattern - Static Event Ids")
 
 TEST_CASE("Event Pattern - Register/Unregister Event Consumer")
 {
-    EventQueue eventQueue{};
-    const EventQueue::ConsumerToken token{EventQueue::GetConsumerToken()};
-    REQUIRE(token > EventQueue::ConsumerToken::Invalid);
+    const Event::EventQueue::ConsumerToken token{Event::EventQueue::GetConsumerToken()};
+    REQUIRE(token > Event::EventQueue::ConsumerToken::Invalid);
+
+    Event::EventQueue eventQueue{};
 
     uint32_t value{0};
     eventQueue.RegisterConsumer<EventA>(
@@ -105,9 +106,9 @@ TEST_CASE("Event Pattern  - Benchmarks")
     {
         constexpr uint32_t eventCount{100'000};
 
-        EventQueue eventQueue{};
-        const EventQueue::ConsumerToken token{EventQueue::GetConsumerToken()};
+        const Event::EventQueue::ConsumerToken token{Event::EventQueue::GetConsumerToken()};
 
+        Event::EventQueue eventQueue{};
         eventQueue.RegisterConsumer<EventA>(
             token,
             [](const EventA&){});
@@ -127,13 +128,13 @@ TEST_CASE("Event Pattern  - Benchmarks")
     {
         constexpr uint32_t registerCount{10'000};
 
-        std::vector<EventQueue::ConsumerToken> tokens{};
+        std::vector<Event::EventQueue::ConsumerToken> tokens{};
         tokens.reserve(registerCount);
 
-        EventQueue eventQueue{};
+        Event::EventQueue eventQueue{};
         for(uint32_t i{0}; i != registerCount; ++i)
         {
-            const EventQueue::ConsumerToken token{EventQueue::GetConsumerToken()};
+            const Event::EventQueue::ConsumerToken token{Event::EventQueue::GetConsumerToken()};
             eventQueue.RegisterConsumer<EventA>(
                 token,
                 [](const EventA&){});
@@ -143,7 +144,7 @@ TEST_CASE("Event Pattern  - Benchmarks")
             tokens.push_back(token);
         }
 
-        for(const EventQueue::ConsumerToken token : tokens)
+        for(const Event::EventQueue::ConsumerToken token : tokens)
         {
             eventQueue.UnregisterConsumer<EventB>(token);
             eventQueue.UnregisterConsumer<EventA>(token);

@@ -141,6 +141,9 @@
     <ClInclude Include="eventconsumer.h" />
     <ClInclude Include="eventpatternexamples.h" />
     <ClInclude Include="eventqueue.h" />
+    <ClInclude Include="event\event.h" />
+    <ClInclude Include="event\eventconsumer.h" />
+    <ClInclude Include="event\eventqueue.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />

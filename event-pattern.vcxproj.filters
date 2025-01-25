@@ -6,12 +6,24 @@
   <ItemGroup>
     <ClInclude Include="eventpatternexamples.h" />
     <ClInclude Include="event.h" />
-    <ClInclude Include="eventhandler.h" />
     <ClInclude Include="eventqueue.h" />
+    <ClInclude Include="eventconsumer.h" />
+    <ClInclude Include="event\event.h">
+      <Filter>Event</Filter>
+    </ClInclude>
+    <ClInclude Include="event\eventconsumer.h">
+      <Filter>Event</Filter>
+    </ClInclude>
+    <ClInclude Include="event\eventqueue.h">
+      <Filter>Event</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Misc">
       <UniqueIdentifier>{7335a912-7fc5-4092-b409-5d627030dacb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Event">
+      <UniqueIdentifier>{52a34cb5-668b-46fe-b38b-5ad8bbcbdc33}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
